@@ -4,13 +4,14 @@ import com.example.demo.article.entity.ArticleEntity
 import com.example.demo.article.model.Author
 import com.example.demo.article.model.CreateArticleRequest
 import com.example.demo.article.model.SingleArticleResponse
+import com.example.demo.users.entity.UserEntity
 
-fun CreateArticleRequest.toArticleEntity(ownerUserName: String = "") = ArticleEntity(
+fun CreateArticleRequest.toArticleEntity(ownerUser: UserEntity) = ArticleEntity(
     body = body,
     title = title,
     createdAt = System.currentTimeMillis().toString(),
     updateAt = System.currentTimeMillis().toString(),
-    ownerUsername = ownerUserName
+    owner = ownerUser
 )
 
 fun ArticleEntity.toSingleArticle(

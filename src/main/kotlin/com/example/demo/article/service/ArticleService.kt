@@ -21,7 +21,7 @@ class ArticleService(
     fun saveNewArticle(articleRequest: CreateArticleRequest, token: String): ArticleWrapper<SingleArticleResponse> {
         val email = jwtService.extractUserName(token.substring(7))
         val userEntity = userRepository.findByEmail(email.orEmpty()).get()
-        val entity = articleRequest.toArticleEntity(ownerUserName = userEntity.username)
+        val entity = articleRequest.toArticleEntity(ownerUser = userEntity)
         val savedEntity = articleRepository.save(entity)
         return ArticleWrapper(
             savedEntity.toSingleArticle(

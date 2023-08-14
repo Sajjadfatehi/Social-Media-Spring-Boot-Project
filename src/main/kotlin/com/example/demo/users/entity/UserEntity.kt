@@ -1,5 +1,7 @@
 package com.example.demo.users.entity
 
+import com.example.demo.article.entity.ArticleEntity
+import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.*
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
@@ -19,12 +21,14 @@ data class UserEntity(
     private val bio: String? = null,
     @Column(name = "email", unique = true)
     private val email: String,
-    @Column(name = "token")
-    private val token: String? = null,
     @Column(name = "following")
     private val following: Boolean? = false,
     @Column(name = "image")
-    val image: String? = null
+    val image: String? = null,
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "owner", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    val articles: MutableList<ArticleEntity> = mutableListOf()
 ) : UserDetails {
     override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
         return mutableListOf(SimpleGrantedAuthority("my-admin"))

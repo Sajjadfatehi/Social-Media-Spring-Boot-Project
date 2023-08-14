@@ -1,9 +1,8 @@
 package com.example.demo.article.entity
 
-import jakarta.persistence.Entity
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.GenerationType
-import jakarta.persistence.Id
+import com.example.demo.users.entity.UserEntity
+import com.fasterxml.jackson.annotation.JsonIgnore
+import jakarta.persistence.*
 
 @Entity(name = "article")
 data class ArticleEntity(
@@ -15,5 +14,9 @@ data class ArticleEntity(
     val updateAt: String? = null,
     var body: String,
     var favoriteCount: Int=0,
-    var ownerUsername: String,
+
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id", referencedColumnName = "id")
+    var owner: UserEntity
 )
