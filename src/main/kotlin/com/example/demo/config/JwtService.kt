@@ -51,7 +51,8 @@ class JwtService {
             .setClaims(extraClaims)
             .setSubject(userDetails.username)
             .setIssuedAt(Date(System.currentTimeMillis()))
-            .setExpiration(Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24))
+            /** expire jwt in 10 days */
+            .setExpiration(Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 10))
             .signWith(getSignInKey(), SignatureAlgorithm.HS256)
             .compact()
     }

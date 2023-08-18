@@ -1,6 +1,7 @@
 package com.example.demo.users.entity
 
 import com.example.demo.article.entity.ArticleEntity
+import com.example.demo.commect.entity.CommentEntity
 import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.*
 import org.springframework.security.core.GrantedAuthority
@@ -12,7 +13,7 @@ import org.springframework.security.core.userdetails.UserDetails
 data class UserEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long =0,
+    val id: Long = 0,
     @Column(name = "username", unique = true)
     private val username: String,
     @Column(name = "password")
@@ -28,7 +29,11 @@ data class UserEntity(
 
     @JsonIgnore
     @OneToMany(mappedBy = "owner", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
-    val articles: MutableList<ArticleEntity> = mutableListOf()
+    val articles: MutableList<ArticleEntity> = mutableListOf(),
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "author", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    val comments: MutableList<CommentEntity> = mutableListOf()
 ) : UserDetails {
     override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
         return mutableListOf(SimpleGrantedAuthority("my-admin"))
@@ -57,4 +62,13 @@ data class UserEntity(
     override fun isEnabled(): Boolean {
         return true
     }
+
+    fun getRealUserName(): String {
+        return username
+    }
+
+    fun getBio(): String {
+        return bio.orEmpty()
+    }
+
 }

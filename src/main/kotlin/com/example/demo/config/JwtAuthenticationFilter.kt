@@ -1,5 +1,6 @@
 package com.example.demo.config
 
+import com.example.demo.share.Constants.JWT_START_INDEX
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -26,7 +27,7 @@ class JwtAuthenticationFilter(
             filterChain.doFilter(request, response)
             return
         }
-        val jwt = authHeader.substring(7)
+        val jwt = authHeader.substring(JWT_START_INDEX)
         val userEmail = jwtService.extractUserName(jwt)
 
         if (userEmail != null && SecurityContextHolder.getContext().authentication == null) {

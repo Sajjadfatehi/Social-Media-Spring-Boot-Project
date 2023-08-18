@@ -33,7 +33,8 @@ class AuthService(
         return AuthResponseWrapper(
             AuthResponse(
                 token = jwtToken,
-                username = request.username
+                email = request.username,
+                username = user.getRealUserName()
             )
         )
     }
@@ -52,7 +53,8 @@ class AuthService(
         return AuthResponseWrapper(
             AuthResponse(
                 token = jwtToken,
-                username = user.username
+                email = user.username,
+                username = user.getRealUserName()
             )
         )
     }
