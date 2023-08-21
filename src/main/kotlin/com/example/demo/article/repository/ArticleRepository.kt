@@ -17,4 +17,6 @@ interface ArticleRepository : JpaRepository<ArticleEntity, Long> {
     fun findAllByOwnerName(@Param("userName") userName: String): Optional<List<ArticleEntity>>
 
     fun findBySlug(slug: Long): Optional<ArticleEntity>
+
+    fun deleteBySlug(slug: Long): Optional<Unit>
 }

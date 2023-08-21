@@ -44,4 +44,9 @@ class ArticleController(val service: ArticleService) {
     ): ResponseEntity<ArticleWrapper<SingleArticleResponse>> {
         return ResponseEntity.ok(service.editArticle(body, slug))
     }
+
+    @DeleteMapping("/{slug}")
+    fun deleteArticle(@PathVariable("slug") slug: String): ResponseEntity<Unit> {
+        return ResponseEntity.ok(service.deleteArticle(slug))
+    }
 }

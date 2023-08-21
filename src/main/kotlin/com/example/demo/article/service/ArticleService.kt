@@ -15,6 +15,7 @@ import com.example.demo.users.repoistory.UserRepository
 import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
+import kotlin.jvm.optionals.getOrElse
 import kotlin.jvm.optionals.getOrNull
 
 @Service
@@ -81,6 +82,16 @@ class ArticleService(
         existingArticle.body = body.articleEditRequest.body
         val updatedEntity = articleRepository.save(existingArticle)
         return ArticleWrapper(updatedEntity.toSingleArticle(updatedEntity.owner.toAuthor()))
+    }
+
+    @Transactional
+    fun deleteArticle(slug: String) {
+        val articleToDelete = articleRepository.findBySlug(slug.toLong()).orElseThrow {
+            throw EntityNotFoundException("Article not found with title: $slug")
+        }
+
+        articleToDelete.tags.clear()
+        articleRepository.delete(articleToDelete)
     }
 
 
