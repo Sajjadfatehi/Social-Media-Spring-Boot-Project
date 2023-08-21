@@ -10,12 +10,14 @@ import com.example.demo.article.model.SingleArticleResponse
 import com.example.demo.article.repository.ArticleRepository
 import com.example.demo.config.JwtService
 import com.example.demo.share.Constants.JWT_START_INDEX
+import com.example.demo.tag.entity.TagEntity
 import com.example.demo.tag.repository.TagRepository
 import com.example.demo.users.entity.UserEntity
 import com.example.demo.users.mapper.toAuthor
 import com.example.demo.users.repoistory.UserRepository
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
+import kotlin.jvm.optionals.getOrNull
 
 @Service
 class ArticleService(
@@ -29,6 +31,20 @@ class ArticleService(
     fun saveNewArticle(articleRequest: CreateArticleRequest, token: String): ArticleWrapper<SingleArticleResponse> {
         val userEntity = findUserByToken(token)
         val entity = articleRequest.toArticleEntity(ownerUser = userEntity)
+
+        /** doing that for avoid adding tag with existing text in db. add exact those instance */
+        val tagsToAdd = mutableListOf<TagEntity>()
+        for (tag in entity.tags) {
+            val existingTag = tagRepository.findByText(tag.text).getOrNull()
+            if (existingTag != null) {
+                tagsToAdd.add(existingTag)
+            } else {
+                tagsToAdd.add(tag)
+            }
+        }
+        entity.tags.clear()
+        entity.tags.addAll(tagsToAdd)
+
         val savedEntity = articleRepository.save(entity)
         return ArticleWrapper(
             savedEntity.toSingleArticle(
