@@ -53,8 +53,13 @@ class ArticleService(
     }
 
     fun getUserArticlesByUserName(username: String): ArticleListResponse {
-        val userEntity = userRepository.findByUsername(username).get()
-        return articleRepository.findAllByOwner(userEntity).get().toArticleListResponse()
+        var userEntity = userRepository.findByUsername(username).getOrNull()
+        if (userEntity == null) {
+            userEntity = userRepository.findByEmail(username).orElseThrow {
+                EntityNotFoundException("there is no user with username: $username")
+            }
+        }
+        return articleRepository.findAllByOwner(userEntity!!).get().toArticleListResponse()
     }
 
     fun getArticleBySlug(slug: String): ArticleWrapper<SingleArticleResponse>? {
