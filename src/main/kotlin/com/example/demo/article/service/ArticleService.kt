@@ -3,10 +3,7 @@ package com.example.demo.article.service
 import com.example.demo.article.mapper.toArticleEntity
 import com.example.demo.article.mapper.toArticleListResponse
 import com.example.demo.article.mapper.toSingleArticle
-import com.example.demo.article.model.ArticleListResponse
-import com.example.demo.article.model.ArticleWrapper
-import com.example.demo.article.model.CreateArticleRequest
-import com.example.demo.article.model.SingleArticleResponse
+import com.example.demo.article.model.*
 import com.example.demo.article.repository.ArticleRepository
 import com.example.demo.config.JwtService
 import com.example.demo.share.Constants.JWT_START_INDEX
@@ -15,6 +12,7 @@ import com.example.demo.tag.repository.TagRepository
 import com.example.demo.users.entity.UserEntity
 import com.example.demo.users.mapper.toAuthor
 import com.example.demo.users.repoistory.UserRepository
+import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import kotlin.jvm.optionals.getOrNull
@@ -71,9 +69,19 @@ class ArticleService(
     }
 
     fun getTagArticles(tag: String): ArticleListResponse? {
-        val tagEntity=tagRepository.findByText(tag).get()
+        val tagEntity = tagRepository.findByText(tag).get()
 
         return tagEntity.articles.toArticleListResponse()
     }
+
+    fun editArticle(body: EditArticleRequestWrapper, slug: String): ArticleWrapper<SingleArticleResponse>? {
+        val existingArticle = articleRepository.findById(slug.toLong())
+            .orElseThrow { EntityNotFoundException("Article not found with slug: $slug") }
+
+        existingArticle.body = body.articleEditRequest.body
+        val updatedEntity = articleRepository.save(existingArticle)
+        return ArticleWrapper(updatedEntity.toSingleArticle(updatedEntity.owner.toAuthor()))
+    }
+
 
 }

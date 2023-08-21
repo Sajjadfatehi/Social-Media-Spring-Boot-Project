@@ -1,9 +1,6 @@
 package com.example.demo.article.controller
 
-import com.example.demo.article.model.ArticleListResponse
-import com.example.demo.article.model.ArticleWrapper
-import com.example.demo.article.model.CreateArticleRequest
-import com.example.demo.article.model.SingleArticleResponse
+import com.example.demo.article.model.*
 import com.example.demo.article.service.ArticleService
 import com.example.demo.share.Constants
 import org.springframework.http.ResponseEntity
@@ -38,5 +35,13 @@ class ArticleController(val service: ArticleService) {
         return ResponseEntity.ok(
             service.getTagArticles(tag)
         )
+    }
+
+    @PutMapping("/{slug}")
+    fun editArticle(
+        @RequestBody() body: EditArticleRequestWrapper,
+        @PathVariable("slug") slug: String,
+    ): ResponseEntity<ArticleWrapper<SingleArticleResponse>> {
+        return ResponseEntity.ok(service.editArticle(body, slug))
     }
 }
