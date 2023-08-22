@@ -10,10 +10,11 @@ fun UserEntity.toAuthor(isFollowing: Boolean = false) = Author(
     image = image.orEmpty()
 )
 
-fun UserEntity.toUserDTO() = UserDTO(
+//TODO: pass isFollowing to all user cases
+fun UserEntity.toUserDTO(isFollowing:Boolean=false) = UserDTO(
     username = getRealUserName(),
     bio = getBio(),
     email = username,
-    following = false,
+    following = isFollowing,
     image = image?:"https://yt3.ggpht.com/-b-fXZSZ0hPw/AAAAAAAAAAI/AAAAAAAAAAA/mq4JpF46xq4/s28-c-k-no-mo-rj-c0xffffff/photo.jpg",
 )//TODO: mock image

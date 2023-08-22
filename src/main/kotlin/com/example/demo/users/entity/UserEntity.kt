@@ -22,8 +22,6 @@ data class UserEntity(
     private val bio: String? = null,
     @Column(name = "email", unique = true)
     private val email: String,
-    @Column(name = "following")
-    private val following: Boolean? = false,
     @Column(name = "image")
     val image: String? = null,
 
@@ -33,8 +31,18 @@ data class UserEntity(
 
     @JsonIgnore
     @OneToMany(mappedBy = "author", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
-    val comments: MutableList<CommentEntity> = mutableListOf()
-) : UserDetails {
+    val comments: MutableList<CommentEntity> = mutableListOf(),
+
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "follower", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    val followingUsers: MutableList<FollowEntity> = mutableListOf(),
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "following", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    val followers: MutableList<FollowEntity> = mutableListOf(),
+
+    ) : UserDetails {
     override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
         return mutableListOf(SimpleGrantedAuthority("my-admin"))
     }
@@ -69,6 +77,25 @@ data class UserEntity(
 
     fun getBio(): String {
         return bio.orEmpty()
+    }
+
+    fun follow(userToFollow: UserEntity) {
+        if (!isFollowing(userToFollow)) {
+            val followEntity = FollowEntity(follower = this, following = userToFollow)
+            followingUsers.add(followEntity)
+        }
+    }
+
+    fun unfollow(userToUnfollow: UserEntity) {
+        val followToRemove = followingUsers.firstOrNull() { it.following == userToUnfollow }
+        if (followToRemove != null) {
+            followingUsers.remove(followToRemove)
+            userToUnfollow.followers.remove(followToRemove)
+        }
+    }
+
+    fun isFollowing(user: UserEntity): Boolean {
+        return followingUsers.any { it.following == user }
     }
 
 }
