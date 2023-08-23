@@ -17,10 +17,11 @@ fun CreateArticleRequest.toArticleEntity(ownerUser: UserEntity) = ArticleEntity(
     owner = ownerUser,
     tags = tagList.map { it.toTagEntity() }.toMutableList()
 )
+
 //TODO: pass the correct value of isBookmark in every use case
 fun ArticleEntity.toSingleArticle(
     user: Author,
-    isBookmarked: Boolean = false,
+    isBookmarked: Boolean,
 ) = SingleArticleResponse(
     user = user,
     body = body,
@@ -34,15 +35,25 @@ fun ArticleEntity.toSingleArticle(
     tagList = tags.map { it.text }
 )
 
-fun List<ArticleEntity>.toArticleListResponse(
-//    user: Author,
-    isBookmarked: Boolean = false,
+//TODO: pass the correct value of isBookmark in every use case
+//fun List<ArticleEntity>.toArticleListResponse(
+//    isBookmarked: Boolean = false,
+//    ) = ArticleListResponse(
+//    articles = this.map {
+//        it.toSingleArticle(
+//            user = it.owner.toAuthor(),
+//            isBookmarked = isBookmarked
+//        )
+//    },
+//    articlesCount = this.size
+//)
 
-    ) = ArticleListResponse(
+fun Map<ArticleEntity,Boolean>.toArticleListResponse(
+) = ArticleListResponse(
     articles = this.map {
-        it.toSingleArticle(
-//            user = user
-            user = it.owner.toAuthor()
+        it.key.toSingleArticle(
+            user = it.key.owner.toAuthor(),
+            isBookmarked = it.value
         )
     },
     articlesCount = this.size

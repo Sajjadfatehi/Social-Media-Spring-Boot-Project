@@ -18,7 +18,6 @@ import com.example.demo.users.repoistory.UserRepository
 import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
-import kotlin.jvm.optionals.getOrElse
 import kotlin.jvm.optionals.getOrNull
 
 @Service
@@ -28,7 +27,7 @@ class ArticleService(
     val userRepository: UserRepository,
     val tagRepository: TagRepository,
     val jwtService: JwtService,
-    val bookmarkRepository: BookmarkRepository
+    val bookmarkRepository: BookmarkRepository,
 ) {
 
     @Transactional
@@ -54,26 +53,47 @@ class ArticleService(
         val savedEntity = articleRepository.save(entity)
         return ArticleWrapper(
             savedEntity.toSingleArticle(
-                user = userEntity.toAuthor()
+                user = userEntity.toAuthor(),
+                isBookmarked = false
             )
         )
     }
 
-    fun getUserArticlesByUserName(username: String): ArticleListResponse {
+    fun getUserArticlesByUserName(username: String, token: String): ArticleListResponse {
         var userEntity = userRepository.findByUsername(username).getOrNull()
         if (userEntity == null) {
             userEntity = userRepository.findByEmail(username).orElseThrow {
                 EntityNotFoundException("there is no user with username: $username")
             }
         }
-        return userEntity!!.articles.toArticleListResponse()
+        val mySelf = findUserByToken(token).also {
+            if (it == null) throw EntityNotFoundException("this user with this id not found")
+        }
+
+        val articleMap = userEntity!!.articles.associateBy(
+            {
+                it
+            }, {
+                articleIsBookmarkedForMe(it, mySelf!!)
+            }
+        )
+        return articleMap.toArticleListResponse()
+
+//        return userEntity.articles.toArticleListResponse()
+
 //        return articleRepository.findAllByOwner(userEntity!!).get().toArticleListResponse()
     }
 
-    fun getArticleBySlug(slug: String): ArticleWrapper<SingleArticleResponse>? {
+    fun getArticleBySlug(slug: String, token: String): ArticleWrapper<SingleArticleResponse>? {
         val articleEntity = articleRepository.findBySlug(slug.toLong()).get()
+
+        val isBookmarkedForMe = articleIsBookmarkedForMe(articleEntity, token)
+
         return ArticleWrapper(
-            article = articleEntity.toSingleArticle(articleEntity.owner.toAuthor())
+            article = articleEntity.toSingleArticle(
+                user = articleEntity.owner.toAuthor(),
+                isBookmarked = isBookmarkedForMe
+            )
         )
     }
 
@@ -82,19 +102,41 @@ class ArticleService(
         return userRepository.findByEmail(email.orEmpty()).getOrNull()
     }
 
-    fun getTagArticles(tag: String): ArticleListResponse? {
+    fun getTagArticles(tag: String, token: String): ArticleListResponse? {
         val tagEntity = tagRepository.findByText(tag).get()
 
-        return tagEntity.articles.toArticleListResponse()
+        val mySelf = findUserByToken(token).also {
+            if (it == null) throw EntityNotFoundException("your token is invalid")
+        }
+
+        val articleMap = tagEntity.articles.associateBy(
+            {
+                it
+            }, {
+                articleIsBookmarkedForMe(it, mySelf!!)
+            }
+        )
+        return articleMap.toArticleListResponse()
+
+//        return tagEntity.articles.toArticleListResponse()
     }
 
-    fun editArticle(body: EditArticleRequestWrapper, slug: String): ArticleWrapper<SingleArticleResponse>? {
+    fun editArticle(
+        body: EditArticleRequestWrapper,
+        slug: String,
+        token: String,
+    ): ArticleWrapper<SingleArticleResponse>? {
         val existingArticle = articleRepository.findById(slug.toLong())
             .orElseThrow { EntityNotFoundException("Article not found with slug: $slug") }
 
+
+
         existingArticle.body = body.articleEditRequest.body
         val updatedEntity = articleRepository.save(existingArticle)
-        return ArticleWrapper(updatedEntity.toSingleArticle(updatedEntity.owner.toAuthor()))
+
+        val isBookmarkedForMe = articleIsBookmarkedForMe(updatedEntity, token)
+
+        return ArticleWrapper(updatedEntity.toSingleArticle(updatedEntity.owner.toAuthor(), isBookmarkedForMe))
     }
 
     @Transactional
@@ -167,7 +209,7 @@ class ArticleService(
         )
     }
 
-    fun getBookmarkedArticles(username: String): ArticleListResponse? {
+    fun getBookmarkedArticles(username: String, token: String): ArticleListResponse? {
         var userEntity = userRepository.findByUsername(username).getOrNull()
         if (userEntity == null) {
             userEntity = userRepository.findByEmail(username).orElseThrow {
@@ -175,7 +217,33 @@ class ArticleService(
             }
         }
 
-        return userEntity!!.bookmarks.map { it.article }.toArticleListResponse()
+        val mySelf = findUserByToken(token).also {
+            if (it == null) throw EntityNotFoundException("this user with this id not found")
+        }
+
+        val articleMap = userEntity!!.bookmarks.map { it.article }.associateBy(
+            {
+                it
+            }, {
+                articleIsBookmarkedForMe(it, mySelf!!)
+            }
+        )
+        return articleMap.toArticleListResponse()
+
+//        return userEntity!!.bookmarks.map { it.article }.toArticleListResponse()
+    }
+
+
+    fun articleIsBookmarkedForMe(articleEntity: ArticleEntity?, token: String): Boolean {
+        val userEntity = findUserByToken(token).also {
+            if (it == null) throw EntityNotFoundException("your token is not valid")
+        }
+        return userEntity!!.bookmarks.any { it.article == articleEntity }
+    }
+
+
+    fun articleIsBookmarkedForMe(articleEntity: ArticleEntity?, userEntity: UserEntity): Boolean {
+        return userEntity.bookmarks.any { it.article == articleEntity }
     }
 
 

@@ -19,30 +19,40 @@ class ArticleController(val service: ArticleService) {
     }
 
     @GetMapping
-    fun getUserArticlesByUserName(@RequestParam("author") username: String): ResponseEntity<ArticleListResponse> {
-        return ResponseEntity.ok(service.getUserArticlesByUserName(username))
+    fun getUserArticlesByUserName(
+        @RequestHeader("Authorization") token: String,
+        @RequestParam("author") username: String,
+    ): ResponseEntity<ArticleListResponse> {
+        return ResponseEntity.ok(service.getUserArticlesByUserName(username,token))
     }
 
     @GetMapping("/{slug}")
-    fun getArticleBySlug(@PathVariable("slug") slug: String): ResponseEntity<ArticleWrapper<SingleArticleResponse>> {
+    fun getArticleBySlug(
+        @RequestHeader("Authorization") token: String,
+        @PathVariable("slug") slug: String
+    ): ResponseEntity<ArticleWrapper<SingleArticleResponse>> {
         return ResponseEntity.ok(
-            service.getArticleBySlug(slug)
+            service.getArticleBySlug(slug,token)
         )
     }
 
     @GetMapping("/tag")
-    fun getTagArticles(@RequestParam("tag") tag: String): ResponseEntity<ArticleListResponse> {
+    fun getTagArticles(
+        @RequestHeader("Authorization") token: String,
+        @RequestParam("tag") tag: String
+    ): ResponseEntity<ArticleListResponse> {
         return ResponseEntity.ok(
-            service.getTagArticles(tag)
+            service.getTagArticles(tag,token)
         )
     }
 
     @PutMapping("/{slug}")
     fun editArticle(
+        @RequestHeader("Authorization") token: String,
         @RequestBody() body: EditArticleRequestWrapper,
         @PathVariable("slug") slug: String,
     ): ResponseEntity<ArticleWrapper<SingleArticleResponse>> {
-        return ResponseEntity.ok(service.editArticle(body, slug))
+        return ResponseEntity.ok(service.editArticle(body, slug,token))
     }
 
     @DeleteMapping("/{slug}")
@@ -68,8 +78,9 @@ class ArticleController(val service: ArticleService) {
 
     @GetMapping("/favorite")
     fun getBookmarkedArticles(
+        @RequestHeader("Authorization") token: String,
         @RequestParam("favorited") username: String,
     ): ResponseEntity<ArticleListResponse> {
-        return ResponseEntity.ok(service.getBookmarkedArticles(username))
+        return ResponseEntity.ok(service.getBookmarkedArticles(username,token))
     }
 }
