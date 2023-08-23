@@ -42,6 +42,10 @@ data class UserEntity(
     @OneToMany(mappedBy = "following", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
     val followers: MutableList<FollowEntity> = mutableListOf(),
 
+    @JsonIgnore
+    @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    val bookmarks: MutableList<BookmarkEntity> = mutableListOf()
+
     ) : UserDetails {
     override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
         return mutableListOf(SimpleGrantedAuthority("my-admin"))

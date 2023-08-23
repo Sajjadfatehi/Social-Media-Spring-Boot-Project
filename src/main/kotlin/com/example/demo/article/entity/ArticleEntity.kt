@@ -2,6 +2,7 @@ package com.example.demo.article.entity
 
 import com.example.demo.commect.entity.CommentEntity
 import com.example.demo.tag.entity.TagEntity
+import com.example.demo.users.entity.BookmarkEntity
 import com.example.demo.users.entity.UserEntity
 import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.*
@@ -33,5 +34,9 @@ data class ArticleEntity(
         joinColumns = [JoinColumn(name = "article_slug", referencedColumnName = "slug")],
         inverseJoinColumns = [JoinColumn(name = "tag_text", referencedColumnName = "text")]
     )
-    val tags: MutableList<TagEntity> = mutableListOf()
+    val tags: MutableList<TagEntity> = mutableListOf(),
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "article", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    val bookmarks: MutableList<BookmarkEntity> = mutableListOf()
 )

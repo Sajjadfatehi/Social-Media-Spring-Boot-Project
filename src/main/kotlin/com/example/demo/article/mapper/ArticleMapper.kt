@@ -17,7 +17,7 @@ fun CreateArticleRequest.toArticleEntity(ownerUser: UserEntity) = ArticleEntity(
     owner = ownerUser,
     tags = tagList.map { it.toTagEntity() }.toMutableList()
 )
-
+//TODO: pass the correct value of isBookmark in every use case
 fun ArticleEntity.toSingleArticle(
     user: Author,
     isBookmarked: Boolean = false,

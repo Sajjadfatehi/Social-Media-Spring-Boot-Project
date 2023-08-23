@@ -49,4 +49,27 @@ class ArticleController(val service: ArticleService) {
     fun deleteArticle(@PathVariable("slug") slug: String): ResponseEntity<Unit> {
         return ResponseEntity.ok(service.deleteArticle(slug))
     }
+
+    @PostMapping("/{slug}/favorite")
+    fun bookmarkArticle(
+        @RequestHeader("Authorization") token: String,
+        @PathVariable("slug") slug: String,
+    ): ResponseEntity<ArticleWrapper<SingleArticleResponse>> {
+        return ResponseEntity.ok(service.bookmarkArticle(token, slug))
+    }
+
+    @DeleteMapping("/{slug}/favorite")
+    fun removeFromBookmarks(
+        @RequestHeader("Authorization") token: String,
+        @PathVariable("slug") slug: String,
+    ): ResponseEntity<ArticleWrapper<SingleArticleResponse>> {
+        return ResponseEntity.ok(service.removeFromBookmarks(token, slug))
+    }
+
+    @GetMapping("/favorite")
+    fun getBookmarkedArticles(
+        @RequestParam("favorited") username: String,
+    ): ResponseEntity<ArticleListResponse> {
+        return ResponseEntity.ok(service.getBookmarkedArticles(username))
+    }
 }
