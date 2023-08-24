@@ -18,6 +18,7 @@ import com.example.demo.users.repoistory.UserRepository
 import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
+import kotlin.jvm.optionals.getOrElse
 import kotlin.jvm.optionals.getOrNull
 
 @Service
@@ -29,6 +30,35 @@ class ArticleService(
     val jwtService: JwtService,
     val bookmarkRepository: BookmarkRepository,
 ) {
+
+    fun getFeedArticles(token: String): ArticleListResponse? {
+        val myself = findUserByToken(token).also {
+            if (it == null) throw EntityNotFoundException("your token is invalid and user not found")
+        }
+
+        val articles = myself!!.followingUsers.map { it.following }.flatMap { it.articles }
+        val articleMap = articles.associateBy(
+            {
+                it
+            },
+            {
+                articleIsBookmarkedForMe(it, myself)
+            }
+        )
+        return articleMap.toArticleListResponse()
+    }
+
+    fun getLatestArticles(token: String): ArticleListResponse? {
+        val myself = findUserByToken(token).also {
+            if (it == null) throw EntityNotFoundException("your token is invalid and user not found")
+        }
+
+        val articles = articleRepository.findLatestArticles().getOrElse { mutableListOf() }
+        return articles.associateBy(
+            { it },
+            { articleIsBookmarkedForMe(it, myself!!) }
+        ).toArticleListResponse()
+    }
 
     @Transactional
     fun saveNewArticle(articleRequest: CreateArticleRequest, token: String): ArticleWrapper<SingleArticleResponse> {
@@ -245,6 +275,4 @@ class ArticleService(
     fun articleIsBookmarkedForMe(articleEntity: ArticleEntity?, userEntity: UserEntity): Boolean {
         return userEntity.bookmarks.any { it.article == articleEntity }
     }
-
-
 }

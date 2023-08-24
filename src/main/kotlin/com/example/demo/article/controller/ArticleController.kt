@@ -10,6 +10,20 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("${Constants.BASE_URL}/articles")
 class ArticleController(val service: ArticleService) {
 
+    @GetMapping("/feed")
+    fun getFeedArticles(
+        @RequestHeader("Authorization") token: String,
+    ): ResponseEntity<ArticleListResponse> {
+        return ResponseEntity.ok(service.getFeedArticles(token))
+    }
+
+    @GetMapping("/latest")
+    fun getLatestArticles(
+        @RequestHeader("Authorization") token: String,
+    ): ResponseEntity<ArticleListResponse> {
+        return ResponseEntity.ok(service.getLatestArticles(token))
+    }
+
     @PostMapping()
     fun createArticle(
         @RequestHeader("Authorization") token: String,
@@ -23,26 +37,26 @@ class ArticleController(val service: ArticleService) {
         @RequestHeader("Authorization") token: String,
         @RequestParam("author") username: String,
     ): ResponseEntity<ArticleListResponse> {
-        return ResponseEntity.ok(service.getUserArticlesByUserName(username,token))
+        return ResponseEntity.ok(service.getUserArticlesByUserName(username, token))
     }
 
     @GetMapping("/{slug}")
     fun getArticleBySlug(
         @RequestHeader("Authorization") token: String,
-        @PathVariable("slug") slug: String
+        @PathVariable("slug") slug: String,
     ): ResponseEntity<ArticleWrapper<SingleArticleResponse>> {
         return ResponseEntity.ok(
-            service.getArticleBySlug(slug,token)
+            service.getArticleBySlug(slug, token)
         )
     }
 
     @GetMapping("/tag")
     fun getTagArticles(
         @RequestHeader("Authorization") token: String,
-        @RequestParam("tag") tag: String
+        @RequestParam("tag") tag: String,
     ): ResponseEntity<ArticleListResponse> {
         return ResponseEntity.ok(
-            service.getTagArticles(tag,token)
+            service.getTagArticles(tag, token)
         )
     }
 
@@ -52,7 +66,7 @@ class ArticleController(val service: ArticleService) {
         @RequestBody() body: EditArticleRequestWrapper,
         @PathVariable("slug") slug: String,
     ): ResponseEntity<ArticleWrapper<SingleArticleResponse>> {
-        return ResponseEntity.ok(service.editArticle(body, slug,token))
+        return ResponseEntity.ok(service.editArticle(body, slug, token))
     }
 
     @DeleteMapping("/{slug}")
@@ -81,6 +95,6 @@ class ArticleController(val service: ArticleService) {
         @RequestHeader("Authorization") token: String,
         @RequestParam("favorited") username: String,
     ): ResponseEntity<ArticleListResponse> {
-        return ResponseEntity.ok(service.getBookmarkedArticles(username,token))
+        return ResponseEntity.ok(service.getBookmarkedArticles(username, token))
     }
 }

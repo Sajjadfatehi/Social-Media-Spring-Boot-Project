@@ -19,4 +19,9 @@ interface ArticleRepository : JpaRepository<ArticleEntity, Long> {
     fun findBySlug(slug: Long): Optional<ArticleEntity>
 
     fun deleteBySlug(slug: Long): Optional<Unit>
+
+
+    @Query("SELECT a FROM article a ORDER BY a.createdAt DESC limit 20")
+    fun findLatestArticles(): Optional<List<ArticleEntity>>
+
 }
